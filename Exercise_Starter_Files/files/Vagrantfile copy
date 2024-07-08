@@ -1,6 +1,5 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-default_box = "generic/opensuse15"
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -13,46 +12,9 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-
-  config.vm.define "kube8" do |master|
-    master.vm.box = default_box
-    master.vm.hostname = "kube8"
-    master.vm.network 'private_network', ip: "192.168.5.200",  virtualbox__intnet: true
-    master.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", disabled: true
-    master.vm.network "forwarded_port", guest: 22, host: 2000 # Master Node SSH
-    master.vm.network "forwarded_port", guest: 6443, host: 6443 # API Access
-    master.vm.network "forwarded_port", guest: 80, host: 8080
-    master.vm.network "forwarded_port", guest: 9090, host: 9090
-    master.vm.network "forwarded_port", guest: 8080, host: 8080
-    # master.vm.network "forwarded_port", guest: 8888, host: 8080 
-    master.vm.network "forwarded_port", guest: 9090, host: 8888
-    master.vm.network "forwarded_port", guest: 3000, host: 3000
-    master.vm.network "forwarded_port", guest: 3030, host: 3030
-    master.vm.network "forwarded_port", guest: 8080, host: 8080
-    master.vm.network "forwarded_port", guest: 16686, host: 8088
-    # master.vm.network "forwarded_port", guest: 8000, host: 8888
-    master.vm.network "forwarded_port", guest: 8888, host: 8888
-    master.vm.network "forwarded_port", guest: 8000, host: 8000
-    # for p in 30000..30100 # expose NodePort IP's
-    #   master.vm.network "forwarded_port", guest: p, host: p, protocol: "tcp"
-    #   end
-    master.vm.provider "virtualbox" do |v|
-      v.memory = "4096"
-      v.name = "kube8"
-      end
-    master.vm.provision "shell", inline: <<-SHELL
-      sudo zypper refresh
-      sudo zypper --non-interactive install bzip2
-      sudo zypper --non-interactive install etcd
-      sudo zypper --non-interactive install apparmor-parser
-    SHELL
-
-    args = []
-      master.vm.provision "k3s shell script", type: "shell",
-          path: "scripts/k3s.sh",
-          args: args
-  end
-
+  # Use any version shown here https://app.vagrantup.com/opensuse/boxes/Leap-15.4.x86_64
+  config.vm.box = "opensuse/Leap-15.4.x86_64"
+  config.vm.box_version = "15.4.13.7"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -63,7 +25,20 @@ Vagrant.configure("2") do |config|
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   # NOTE: This will enable public access to the opened port
-  # config.vm.network "forwarded_port", guest: 8080, host: 8080
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 9090, host: 9090
+  config.vm.network "forwarded_port", guest: 8080, host: 8080
+  #config.vm.network "forwarded_port", guest: 8888, host: 8080 
+  config.vm.network "forwarded_port", guest: 9090, host: 8888
+  config.vm.network "forwarded_port", guest: 3000, host: 3000
+  config.vm.network "forwarded_port", guest: 3030, host: 3030
+  config.vm.network "forwarded_port", guest: 8080, host: 8080
+  config.vm.network "forwarded_port", guest: 16686, host: 8088
+  #config.vm.network "forwarded_port", guest: 8000, host: 8888
+  config.vm.network "forwarded_port", guest: 8888, host: 8888
+  config.vm.network "forwarded_port", guest: 8000, host: 8000
+  config.vm.network "forwarded_port", guest: 6443, host: 6443
+  config.vm.network "forwarded_port", guest: 22, host: 2000
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine and only allow access
@@ -72,7 +47,7 @@ Vagrant.configure("2") do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
+  config.vm.network "private_network", ip: "192.168.33.10"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -83,19 +58,22 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  #  config.vm.synced_folder "./", "/vagrant"
+  # config.vm.synced_folder "../data", "/vagrant_data"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  # config.vm.provider "virtualbox" do |vb|
+  config.vm.provider "virtualbox" do |vb|
   #   # Display the VirtualBox GUI when booting the machine
   #   vb.gui = true
   #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
+  #   # Customize the amount of memory on the VM:clear
+
+    vb.memory = "4096"
+    #vb.memory = "2048"
+    vb.name = "k3s"
+  end
   #
   # View the documentation for the provider you are using for more
   # information on available options.
@@ -107,4 +85,9 @@ Vagrant.configure("2") do |config|
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
+
+  args = []
+      config.vm.provision "k3s shell script", type: "shell",
+          path: "scripts/k3s.sh",
+          args: args
 end
